@@ -6,9 +6,9 @@ from datetime import datetime
 
 #Page config
 st.set_page_config(
-    page_title="DocuMine Intel | Enterprise Doc AI", 
+    page_title="PRITHVI AI | Enterprise Doc AI", 
     layout="wide", 
-    page_icon="⛏️",
+    page_icon=,
     initial_sidebar_state="expanded"
 )
 
