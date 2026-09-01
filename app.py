@@ -4,9 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 
-# ==========================================
-# 1. PAGE CONFIGURATION & THEME
-# ==========================================
+#Page config
 st.set_page_config(
     page_title="DocuMine Intel | Enterprise Doc AI", 
     layout="wide", 
@@ -14,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling for Enterprise Look & Feel
+# styling
 st.markdown("""
     <style>
     .main { background-color: #FAFAFA; }
@@ -24,9 +22,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ==========================================
-# 2. STATE INITIALIZATION (PERSISTENT DB)
-# ==========================================
+#state initialisation
 def init_session_state():
     if 'docs_db' not in st.session_state:
         st.session_state.docs_db = pd.DataFrame([
@@ -52,18 +48,16 @@ def resolve_conflict(chosen_id, rejected_id):
     st.session_state.facts_db.loc[st.session_state.facts_db['Fact_ID'] == rejected_id, 'Status'] = 'Resolved (Rejected)'
     st.rerun()
 
-# ==========================================
-# 3. SIDEBAR CONTROLS & NAVIGATION
-# ==========================================
+# sidebar and nav 
 with st.sidebar:
-    st.title("⛏️ DocuMine Intel")
+    st.title("PRITHVI AI")
     st.caption("Verifiable Mining Document Extraction Engine")
     st.divider()
     
     # Navigation Radio
     view = st.radio(
         "Navigation", 
-        ["📊 Control Dashboard", "📁 Document Repository", "🔍 Fact Inspector", "📈 Analytics & Change", "⚠ Conflict Resolution", "📑 Dynamic Reports"],
+        ["Control Dashboard", "Document Repository", "Fact Inspector", "Analytics & Change", "Conflict Resolution", "Dynamic Reports"],
         index=0
     )
     
@@ -82,12 +76,10 @@ with st.sidebar:
     st.divider()
     st.caption("SIH Prototype v2.4 | Engine Status: **Active**")
 
-# ==========================================
-# 4. VIEW ROUTING & MAIN MODULES
-# ==========================================
+#### ROUTING AND MAIN MODULES ####
 
 # --- VIEW 1: CONTROL DASHBOARD ---
-if view == "📊 Control Dashboard":
+if view == " Control Dashboard":
     st.header("Executive Control Dashboard")
     st.write("Real-time operational summary of document ingestion and data verification pipelines.")
     
@@ -118,7 +110,7 @@ if view == "📊 Control Dashboard":
         """)
 
 # --- VIEW 2: DOCUMENT REPOSITORY ---
-elif view == "📁 Document Repository":
+elif view == "Document Repository":
     st.header("Document Ingestion & Storage")
     st.write("Manage parsed documents and trigger automated scraping pipelines.")
     
@@ -141,14 +133,14 @@ elif view == "📁 Document Repository":
                 
     with col_up2:
         st.write("### Quick Actions")
-        if st.button("🔄 Trigger Web Crawler", use_container_width=True):
+        if st.button("Trigger Web Crawler", use_container_width=True):
             st.toast("Crawling SEC EDGAR & ASX repositories...", icon="🔍")
 
     st.divider()
     st.dataframe(st.session_state.docs_db, use_container_width=True, hide_index=True)
 
 # --- VIEW 3: FACT INSPECTOR ---
-elif view == "🔍 Fact Inspector":
+elif view == "Fact Inspector":
     st.header("Structured Fact Database")
     st.write("Every extracted value is mapped to its exact spatial location within the source PDF.")
     
@@ -184,10 +176,10 @@ elif view == "🔍 Fact Inspector":
     
     # Data Export Capability
     csv = df_filtered.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Export Fact Database (CSV)", data=csv, file_name="extracted_facts.csv", mime="text/csv")
+    st.download_button("Export Fact Database (CSV)", data=csv, file_name="extracted_facts.csv", mime="text/csv")
 
 # --- VIEW 4: ANALYTICS & CHANGE ---
-elif view == "📈 Analytics & Change":
+elif view == "Analytics & Change":
     st.header("Analytics Engine & Deterministic Rules")
     
     clean_df = st.session_state.facts_db[st.session_state.facts_db['Status'] == 'Verified']
@@ -253,7 +245,7 @@ elif view == "📈 Analytics & Change":
                 st.info("Insufficient historical data points for line trend.")
 
 # --- VIEW 5: CONFLICT RESOLUTION ---
-elif view == "⚠ Conflict Resolution":
+elif view == "Conflict Resolution":
     st.header("Human-in-the-Loop Conflict Resolution")
     st.write("Identified data discrepancies requiring manual verification.")
     
@@ -301,14 +293,14 @@ elif view == "⚠ Conflict Resolution":
             st.rerun()
 
 # --- VIEW 6: DYNAMIC REPORTS ---
-elif view == "📑 Dynamic Reports":
+elif view == "Dynamic Reports":
     st.header("Dynamic Report Generation & Provenance Audit")
     st.write("Generates automated summary documents where every figure links to verified database facts.")
     
     col_rep1, col_rep2 = st.columns([3, 1])
     with col_rep2:
-        st.button("🔄 Sync with Latest Facts", use_container_width=True)
-        st.button("📥 Export Report (PDF)", use_container_width=True)
+        st.button("Sync with Latest Facts", use_container_width=True)
+        st.button("Export Report (PDF)", use_container_width=True)
         
     with col_rep1:
         # Fetch actual data values dynamically from session state
