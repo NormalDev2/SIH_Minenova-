@@ -3,10 +3,11 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 
-# --- PAGE CONFIGURATION & THEME ---
+
+# PAGE CONFIGURATION & THEME
 
 st.set_page_config(
-    page_title="DocuMine | Document Extraction Engine", 
+    page_title="PRITHVI AI | Document Extraction Engine", 
     layout="wide", 
     initial_sidebar_state="expanded"
 )
@@ -46,7 +47,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# --- STATE INITIALIZATION & DATABASE ---
+# STATE INITIALIZATION & DATABASE
+
 def init_session_state():
     if 'docs_db' not in st.session_state:
         st.session_state.docs_db = pd.DataFrame([
@@ -72,21 +74,22 @@ def resolve_conflict(chosen_id, rejected_id):
     st.rerun()
 
 
-#--- SIDEBAR NAVIGATION ---
+# SIDEBAR NAVIGATION
+
 with st.sidebar:
-    st.title("DocuMine Engine")
-    st.caption("Structured Document Processing Platform")
+    st.title("PRITHVI AI")
+    st.caption("Verifiable Mining Document Extraction Engine")
     st.divider()
     
     view = st.radio(
         "Navigation", 
         [
-            "Overview", 
-            "Document Management", 
-            "Fact Database", 
-            "Analytics & Variance", 
-            "Data Conflicts", 
-            "Automated Reports"
+            "Control Dashboard", 
+            "Document Repository", 
+            "Fact Inspector", 
+            "Analytics & Change", 
+            "Conflict Resolution", 
+            "Dynamic Reports"
         ],
         index=0
     )
@@ -96,49 +99,51 @@ with st.sidebar:
     total_facts = len(st.session_state.facts_db)
     conflicts_cnt = len(st.session_state.facts_db[st.session_state.facts_db['Status'] == 'Conflict'])
     
-    st.metric("Indexed Facts", total_facts)
+    st.metric("Total Extracted Facts", total_facts)
     if conflicts_cnt > 0:
-        st.warning(f"Pending Conflicts: {conflicts_cnt}")
+        st.error(f"Unresolved Conflicts: {conflicts_cnt}")
     else:
         st.success("All Conflicts Resolved")
 
     st.divider()
-    st.caption("System Status: Online | Core v2.4")
+    st.caption("SIH Prototype v2.4 | Engine Status: Active")
 
-# VIEW ROUTING & MAIN CONTENT
 
-# --- OVERVIEW ---
-if view == "Overview":
-    st.header("System Overview")
-    st.write("Summary of document ingestion status and structured extraction outputs.")
+#  VIEW ROUTING & MAIN CONTENT
+
+
+# --- CONTROL DASHBOARD  ---
+if view == "Control Dashboard":
+    st.header("Executive Control Dashboard")
+    st.write("Real-time operational summary of document ingestion and data verification pipelines.")
     
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Total Documents", len(st.session_state.docs_db))
+    m1.metric("Ingested Documents", len(st.session_state.docs_db))
     m2.metric("Extracted Datapoints", len(st.session_state.facts_db))
     
     verified_pct = (len(st.session_state.facts_db[st.session_state.facts_db['Status'] == 'Verified']) / len(st.session_state.facts_db)) * 100
     m3.metric("Verification Rate", f"{verified_pct:.1f}%")
-    m4.metric("Unresolved Conflicts", len(st.session_state.facts_db[st.session_state.facts_db['Status'] == 'Conflict']))
+    m4.metric("Active Data Conflicts", len(st.session_state.facts_db[st.session_state.facts_db['Status'] == 'Conflict']))
     
     st.divider()
     c1, c2 = st.columns([2, 1])
     
     with c1:
-        st.subheader("Ingested Files")
+        st.subheader("Recent Ingestion Activity")
         st.dataframe(st.session_state.docs_db, use_container_width=True, hide_index=True)
         
     with c2:
-        st.subheader("Processing Architecture")
+        st.subheader("System Architecture")
         st.markdown("""
-        1. **Ingestion Layer:** Multi-format PDF ingestion.
+        1. **Ingestion Layer:** Multi-format PDF processing.
         2. **Parsing Layer:** Table detection and bounding box extraction.
         3. **Mapping Layer:** Key-value pair extraction to schema.
         4. **Validation Layer:** Cross-document reconciliation.
         5. **Review Layer:** Operator approval interface.
         """)
 
-# --- DOCUMENT MANAGEMENT ---
-elif view == "Document Management":
+# --- DOCUMENT REPOSITORY ---
+elif view == "Document Repository":
     st.header("Document Ingestion")
     st.write("Upload source files or monitor automated ingestion feeds.")
     
@@ -167,8 +172,8 @@ elif view == "Document Management":
     st.divider()
     st.dataframe(st.session_state.docs_db, use_container_width=True, hide_index=True)
 
-# --- FACT DATABASE ---
-elif view == "Fact Database":
+# --- FACT INSPECTOR ---
+elif view == "Fact Inspector":
     st.header("Fact Index")
     st.write("Extracted data points mapped directly to original page coordinates and tables.")
     
@@ -202,8 +207,8 @@ elif view == "Fact Database":
     csv = df_filtered.to_csv(index=False).encode('utf-8')
     st.download_button("Export Dataset (CSV)", data=csv, file_name="extracted_facts.csv", mime="text/csv")
 
-# --- ANALYTICS & VARIANCE ---
-elif view == "Analytics & Variance":
+# --- ANALYTICS & CHANGE ---
+elif view == "Analytics & Change":
     st.header("Metric Analysis")
     
     clean_df = st.session_state.facts_db[st.session_state.facts_db['Status'] == 'Verified']
@@ -267,8 +272,8 @@ elif view == "Analytics & Variance":
             else:
                 st.info("Insufficient data points for trend visual.")
 
-# --- DATA CONFLICTS ---
-elif view == "Data Conflicts":
+# --- CONFLICT RESOLUTION ---
+elif view == "Conflict Resolution":
     st.header("Conflict Review Interface")
     st.write("Review discrepancies detected between different document sources for identical metrics.")
     
@@ -313,8 +318,8 @@ elif view == "Data Conflicts":
             st.session_state.facts_db.loc[st.session_state.facts_db['Fact_ID'] == 'F-005', 'Status'] = 'Conflict'
             st.rerun()
 
-# --- AUTOMATED REPORTS ---
-elif view == "Automated Reports":
+# --- DYNAMIC REPORTS ---
+elif view == "Dynamic Reports":
     st.header("Report Output & Source Auditing")
     st.write("Dynamic text output mapped directly to verified data records.")
     
