@@ -1,33 +1,57 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 from datetime import datetime
 
-#Page config
+# --- PAGE CONFIGURATION & THEME ---
+
 st.set_page_config(
-    page_title="PRITHVI AI | Enterprise Doc AI", 
+    page_title="DocuMine | Document Extraction Engine", 
     layout="wide", 
-    page_icon=".",
     initial_sidebar_state="expanded"
 )
 
-# styling
+# Enterprise Dashboard Styling
 st.markdown("""
     <style>
+    /* Global Container Styles */
     .main { background-color: #FAFAFA; }
-    .stMetric { background-color: #FFFFFF; padding: 15px; border-radius: 8px; border: 1px solid #E0E0E0; }
-    .badge-verified { background-color: #D4EDDA; color: #155724; padding: 3px 8px; border-radius: 4px; border: 1px solid #C3E6CB; font-weight: 600; }
-    .badge-conflict { background-color: #F8D7DA; color: #721C24; padding: 3px 8px; border-radius: 4px; border: 1px solid #F5C6CB; font-weight: 600; }
+    
+    /* Subtle Metric Cards */
+    div[data-testid="stMetric"] {
+        background-color: #FFFFFF;
+        padding: 16px;
+        border-radius: 4px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    
+    /* Clean Text Badges for Evidence */
+    .badge-verified {
+        background-color: #EDF7ED;
+        color: #1E4620;
+        padding: 2px 6px;
+        border-radius: 3px;
+        border: 1px solid #C3E6CB;
+        font-family: monospace;
+        font-size: 0.9em;
+    }
+    
+    /* Clean Sidebar Override */
+    section[data-testid="stSidebar"] {
+        background-color: #F8FAFC;
+        border-right: 1px solid #E2E8F0;
+    }
     </style>
 """, unsafe_allow_html=True)
 
-#state initialisation
+
+# --- STATE INITIALIZATION & DATABASE ---
 def init_session_state():
     if 'docs_db' not in st.session_state:
         st.session_state.docs_db = pd.DataFrame([
             {"Doc_ID": "DOC-01", "Filename": "BHP_Annual_Report_2023.pdf", "Pages": 352, "Date_Uploaded": "2023-09-15", "Status": "Processed", "Type": "Annual Report"},
-            {"Doc_ID": "DOC-02", "Filename": "BHP_Operational_Review_Q4_2023.pdf", "Pages": 48, "Date_Uploaded": "2024-01-20", "Status": "Processed", "Type": "Quarterly"},
+            {"Doc_ID": "DOC-02", "Filename": "BHP_Operational_Review_Q4_2023.pdf", "Pages": 48, "Date_Uploaded": "2024-01-20", "Status": "Processed", "Type": "Quarterly Report"},
             {"Doc_ID": "DOC-03", "Filename": "Rio_Tinto_Annual_Report_2023.pdf", "Pages": 298, "Date_Uploaded": "2024-02-21", "Status": "Processed", "Type": "Annual Report"}
         ])
     
@@ -42,131 +66,132 @@ def init_session_state():
 
 init_session_state()
 
-# Helper function to refresh facts state
 def resolve_conflict(chosen_id, rejected_id):
     st.session_state.facts_db.loc[st.session_state.facts_db['Fact_ID'] == chosen_id, 'Status'] = 'Verified'
     st.session_state.facts_db.loc[st.session_state.facts_db['Fact_ID'] == rejected_id, 'Status'] = 'Resolved (Rejected)'
     st.rerun()
 
-# sidebar and nav 
+
+#--- SIDEBAR NAVIGATION ---
 with st.sidebar:
-    st.title("PRITHVI AI")
-    st.caption("Verifiable Mining Document Extraction Engine")
+    st.title("DocuMine Engine")
+    st.caption("Structured Document Processing Platform")
     st.divider()
     
-    # Navigation Radio
     view = st.radio(
         "Navigation", 
-        ["Control Dashboard", "Document Repository", "Fact Inspector", "Analytics & Change", "Conflict Resolution", "Dynamic Reports"],
+        [
+            "Overview", 
+            "Document Management", 
+            "Fact Database", 
+            "Analytics & Variance", 
+            "Data Conflicts", 
+            "Automated Reports"
+        ],
         index=0
     )
     
     st.divider()
     
-    # Sidebar Metrics Summary
     total_facts = len(st.session_state.facts_db)
     conflicts_cnt = len(st.session_state.facts_db[st.session_state.facts_db['Status'] == 'Conflict'])
     
-    st.metric("Total Extracted Facts", total_facts)
+    st.metric("Indexed Facts", total_facts)
     if conflicts_cnt > 0:
-        st.sidebar.error(f"Unresolved Conflicts: {conflicts_cnt}")
+        st.warning(f"Pending Conflicts: {conflicts_cnt}")
     else:
-        st.sidebar.success("All Conflicts Resolved")
+        st.success("All Conflicts Resolved")
 
     st.divider()
-    st.caption("SIH Prototype v2.4 | Engine Status: **Active**")
+    st.caption("System Status: Online | Core v2.4")
 
-#### ROUTING AND MAIN MODULES ####
+# VIEW ROUTING & MAIN CONTENT
 
-# --- VIEW 1: CONTROL DASHBOARD ---
-if view == " Control Dashboard":
-    st.header("Executive Control Dashboard")
-    st.write("Real-time operational summary of document ingestion and data verification pipelines.")
+# --- OVERVIEW ---
+if view == "Overview":
+    st.header("System Overview")
+    st.write("Summary of document ingestion status and structured extraction outputs.")
     
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Ingested Documents", len(st.session_state.docs_db))
+    m1.metric("Total Documents", len(st.session_state.docs_db))
     m2.metric("Extracted Datapoints", len(st.session_state.facts_db))
     
     verified_pct = (len(st.session_state.facts_db[st.session_state.facts_db['Status'] == 'Verified']) / len(st.session_state.facts_db)) * 100
     m3.metric("Verification Rate", f"{verified_pct:.1f}%")
-    m4.metric("Active Data Conflicts", len(st.session_state.facts_db[st.session_state.facts_db['Status'] == 'Conflict']))
+    m4.metric("Unresolved Conflicts", len(st.session_state.facts_db[st.session_state.facts_db['Status'] == 'Conflict']))
     
     st.divider()
     c1, c2 = st.columns([2, 1])
     
     with c1:
-        st.subheader("Recent Ingestion Activity")
+        st.subheader("Ingested Files")
         st.dataframe(st.session_state.docs_db, use_container_width=True, hide_index=True)
         
     with c2:
-        st.subheader("System Architecture")
-        st.info("""
-        **Processing Steps:**
-        1. **Ingestion:** Native & Scanned PDF OCR
-        2. **Layout Parsing:** Structure & Bounding Box Extraction
-        3. **Fact Extraction:** Deterministic Schema Mapping
-        4. **Cross-Validation:** Multi-document entity matching
-        5. **Human Audit:** Interactive UI confirmation
+        st.subheader("Processing Architecture")
+        st.markdown("""
+        1. **Ingestion Layer:** Multi-format PDF ingestion.
+        2. **Parsing Layer:** Table detection and bounding box extraction.
+        3. **Mapping Layer:** Key-value pair extraction to schema.
+        4. **Validation Layer:** Cross-document reconciliation.
+        5. **Review Layer:** Operator approval interface.
         """)
 
-# --- VIEW 2: DOCUMENT REPOSITORY ---
-elif view == "Document Repository":
-    st.header("Document Ingestion & Storage")
-    st.write("Manage parsed documents and trigger automated scraping pipelines.")
+# --- DOCUMENT MANAGEMENT ---
+elif view == "Document Management":
+    st.header("Document Ingestion")
+    st.write("Upload source files or monitor automated ingestion feeds.")
     
     col_up1, col_up2 = st.columns([3, 1])
     with col_up1:
-        uploaded_file = st.file_uploader("Upload PDF Documents for Processing", type=["pdf"])
+        uploaded_file = st.file_uploader("Upload PDF Document", type=["pdf"])
         if uploaded_file is not None:
-            if st.button("Process Uploaded File"):
+            if st.button("Run Processing Pipeline"):
                 new_doc = {
                     "Doc_ID": f"DOC-0{len(st.session_state.docs_db)+1}",
                     "Filename": uploaded_file.name,
                     "Pages": 120,
                     "Date_Uploaded": datetime.now().strftime("%Y-%m-%d"),
                     "Status": "Processed",
-                    "Type": "Custom Upload"
+                    "Type": "User Upload"
                 }
                 st.session_state.docs_db = pd.concat([st.session_state.docs_db, pd.DataFrame([new_doc])], ignore_index=True)
-                st.success(f"Successfully processed `{uploaded_file.name}`!")
+                st.success(f"Ingested and indexed `{uploaded_file.name}`.")
                 st.rerun()
                 
     with col_up2:
-        st.write("### Quick Actions")
-        if st.button("Trigger Web Crawler", use_container_width=True):
-            st.toast("Crawling SEC EDGAR & ASX repositories...", icon="🔍")
+        st.write("### Actions")
+        if st.button("Run External Crawler", use_container_width=True):
+            st.info("Scanning configured file repositories...")
 
     st.divider()
     st.dataframe(st.session_state.docs_db, use_container_width=True, hide_index=True)
 
-# --- VIEW 3: FACT INSPECTOR ---
-elif view == "Fact Inspector":
-    st.header("Structured Fact Database")
-    st.write("Every extracted value is mapped to its exact spatial location within the source PDF.")
+# --- FACT DATABASE ---
+elif view == "Fact Database":
+    st.header("Fact Index")
+    st.write("Extracted data points mapped directly to original page coordinates and tables.")
     
-    # Filter Controls
     col_f1, col_f2, col_f3 = st.columns(3)
     with col_f1:
-        entity_filter = st.multiselect("Filter Entity", options=st.session_state.facts_db["Entity"].unique(), default=st.session_state.facts_db["Entity"].unique())
+        entity_filter = st.multiselect("Entity", options=st.session_state.facts_db["Entity"].unique(), default=st.session_state.facts_db["Entity"].unique())
     with col_f2:
-        status_filter = st.multiselect("Filter Status", options=st.session_state.facts_db["Status"].unique(), default=st.session_state.facts_db["Status"].unique())
+        status_filter = st.multiselect("Status", options=st.session_state.facts_db["Status"].unique(), default=st.session_state.facts_db["Status"].unique())
     with col_f3:
-        search_term = st.text_input("Search Metric", "")
+        search_term = st.text_input("Filter Metric Name", "")
 
-    # Apply Filters
     df_filtered = st.session_state.facts_db[
         (st.session_state.facts_db["Entity"].isin(entity_filter)) &
         (st.session_state.facts_db["Status"].isin(status_filter)) &
         (st.session_state.facts_db["Metric"].str.contains(search_term, case=False))
     ]
 
-    # Styling Status Column
     def style_status(val):
         if val == 'Verified':
-            return 'background-color: #D4EDDA; color: #155724; font-weight: bold;'
+            return 'background-color: #EDF7ED; color: #1E4620; font-weight: 500;'
         elif val == 'Conflict':
-            return 'background-color: #F8D7DA; color: #721C24; font-weight: bold;'
-        return 'background-color: #FFF3CD; color: #856404;'
+            return 'background-color: #FDF2F2; color: #9B1C1C; font-weight: 500;'
+        return 'background-color: #FEF3C7; color: #92400E;'
 
     st.dataframe(
         df_filtered.style.map(style_status, subset=['Status']), 
@@ -174,22 +199,20 @@ elif view == "Fact Inspector":
         hide_index=True
     )
     
-    # Data Export Capability
     csv = df_filtered.to_csv(index=False).encode('utf-8')
-    st.download_button("Export Fact Database (CSV)", data=csv, file_name="extracted_facts.csv", mime="text/csv")
+    st.download_button("Export Dataset (CSV)", data=csv, file_name="extracted_facts.csv", mime="text/csv")
 
-# --- VIEW 4: ANALYTICS & CHANGE ---
-elif view == "Analytics & Change":
-    st.header("Analytics Engine & Deterministic Rules")
+# --- ANALYTICS & VARIANCE ---
+elif view == "Analytics & Variance":
+    st.header("Metric Analysis")
     
     clean_df = st.session_state.facts_db[st.session_state.facts_db['Status'] == 'Verified']
     
-    selected_metric = st.selectbox("Select Metric for Trend Analysis:", clean_df["Metric"].unique())
+    selected_metric = st.selectbox("Target Metric:", clean_df["Metric"].unique())
     metric_subset = clean_df[clean_df["Metric"] == selected_metric].sort_values(by="Year")
     
     if not metric_subset.empty:
-        # Automated Variance Calculation
-        st.subheader("Automated Year-over-Year (YoY) Variance")
+        st.subheader("Variance Calculation")
         bhp_data = metric_subset[metric_subset["Entity"] == "BHP"]
         
         if len(bhp_data) >= 2:
@@ -201,11 +224,11 @@ elif view == "Analytics & Change":
             unit = bhp_data["Unit"].iloc[0]
             
             c_m1, c_m2 = st.columns(2)
-            c_m1.success(f"**BHP {selected_metric} Variance (2022 ➔ 2023):** +{diff:.2f} {unit} (+{pct:.2f}%)")
-            c_m2.caption(f"**Audit Trail:** Sourced from `{bhp_data['Document'].iloc[0]}`, Page {bhp_data['Page'].iloc[0]}. Verified deterministically.")
+            c_m1.info(f"**BHP {selected_metric} Change (2022 to 2023):** +{diff:.2f} {unit} (+{pct:.2f}%)")
+            c_m2.caption(f"**Source Document:** `{bhp_data['Document'].iloc[0]}` (Page {bhp_data['Page'].iloc[0]})")
 
         st.divider()
-        st.subheader("Structured Visualizations")
+        st.subheader("Visualizations")
         
         col_v1, col_v2 = st.columns(2)
         
@@ -219,16 +242,16 @@ elif view == "Analytics & Change":
                     y="Value", 
                     color="Entity", 
                     text_auto=True,
-                    color_discrete_sequence=px.colors.qualitative.Bold,
-                    title=f"2023 {selected_metric} by Entity"
+                    color_discrete_sequence=["#1E3A8A", "#0D9488"],
+                    title=f"2023 {selected_metric}"
                 )
-                fig_bar.update_layout(yaxis_title=data_2023["Unit"].iloc[0], showlegend=False)
+                fig_bar.update_layout(yaxis_title=data_2023["Unit"].iloc[0], showlegend=False, template="plotly_white")
                 st.plotly_chart(fig_bar, use_container_width=True)
             else:
-                st.info("No data available for 2023 comparison.")
+                st.info("No 2023 data points available.")
                 
         with col_v2:
-            st.markdown("**Historical Trajectory Trend**")
+            st.markdown("**Historical Trajectory**")
             data_trend = metric_subset[metric_subset["Entity"] == "BHP"]
             if not data_trend.empty:
                 fig_line = px.line(
@@ -236,26 +259,25 @@ elif view == "Analytics & Change":
                     x="Year", 
                     y="Value", 
                     markers=True,
-                    title=f"BHP {selected_metric} Historical Trend"
+                    title=f"BHP {selected_metric} Trend"
                 )
-                fig_line.update_traces(line_color="#1F77B4", line_width=3, marker=dict(size=10))
-                fig_line.update_layout(yaxis_title=data_trend["Unit"].iloc[0])
+                fig_line.update_traces(line_color="#1E3A8A", line_width=2, marker=dict(size=8))
+                fig_line.update_layout(yaxis_title=data_trend["Unit"].iloc[0], template="plotly_white")
                 st.plotly_chart(fig_line, use_container_width=True)
             else:
-                st.info("Insufficient historical data points for line trend.")
+                st.info("Insufficient data points for trend visual.")
 
-# --- VIEW 5: CONFLICT RESOLUTION ---
-elif view == "Conflict Resolution":
-    st.header("Human-in-the-Loop Conflict Resolution")
-    st.write("Identified data discrepancies requiring manual verification.")
+# --- DATA CONFLICTS ---
+elif view == "Data Conflicts":
+    st.header("Conflict Review Interface")
+    st.write("Review discrepancies detected between different document sources for identical metrics.")
     
     conflicts = st.session_state.facts_db[st.session_state.facts_db["Status"] == "Conflict"]
     
     if not conflicts.empty:
         for idx, conflict_row in conflicts.iterrows():
-            st.error(f"⚠ CONFLICT DETECTED: {conflict_row['Metric']} ({conflict_row['Entity']}, {conflict_row['Year']})")
+            st.error(f"Data Mismatch: {conflict_row['Metric']} ({conflict_row['Entity']}, {conflict_row['Year']})")
             
-            # Find the opposing verified fact for comparison
             opposing_fact = st.session_state.facts_db[
                 (st.session_state.facts_db["Metric"] == conflict_row["Metric"]) &
                 (st.session_state.facts_db["Entity"] == conflict_row["Entity"]) &
@@ -266,81 +288,78 @@ elif view == "Conflict Resolution":
             col_c1, col_c2 = st.columns(2)
             
             with col_c1:
-                st.info("**Primary Candidate (Authoritative Source)**")
+                st.markdown("**Candidate Record A**")
                 st.metric(label="Extracted Value", value=f"{opposing_fact['Value']} {opposing_fact['Unit']}")
-                st.write(f"**Document:** `{opposing_fact['Document']}`")
+                st.write(f"**File:** `{opposing_fact['Document']}`")
                 st.write(f"**Location:** Page {opposing_fact['Page']}, {opposing_fact['Location']}")
-                st.write(f"**Model Confidence:** {opposing_fact['Confidence']*100:.0f}%")
+                st.write(f"**Extraction Score:** {opposing_fact['Confidence']*100:.0f}%")
                 
-                if st.button(f"Confirm Value: {opposing_fact['Value']} {opposing_fact['Unit']}", key=f"btn_{opposing_fact['Fact_ID']}"):
+                if st.button(f"Approve Record A ({opposing_fact['Value']} {opposing_fact['Unit']})", key=f"btn_{opposing_fact['Fact_ID']}"):
                     resolve_conflict(opposing_fact['Fact_ID'], conflict_row['Fact_ID'])
                     
             with col_c2:
-                st.warning("**Secondary Candidate (Discrepant Source)**")
+                st.markdown("**Candidate Record B**")
                 st.metric(label="Extracted Value", value=f"{conflict_row['Value']} {conflict_row['Unit']}")
-                st.write(f"**Document:** `{conflict_row['Document']}`")
+                st.write(f"**File:** `{conflict_row['Document']}`")
                 st.write(f"**Location:** Page {conflict_row['Page']}, {conflict_row['Location']}")
-                st.write(f"**Model Confidence:** {conflict_row['Confidence']*100:.0f}%")
+                st.write(f"**Extraction Score:** {conflict_row['Confidence']*100:.0f}%")
                 
-                if st.button(f"Confirm Value: {conflict_row['Value']} {conflict_row['Unit']}", key=f"btn_{conflict_row['Fact_ID']}"):
+                if st.button(f"Approve Record B ({conflict_row['Value']} {conflict_row['Unit']})", key=f"btn_{conflict_row['Fact_ID']}"):
                     resolve_conflict(conflict_row['Fact_ID'], opposing_fact['Fact_ID'])
     else:
-        st.success("🎉 Zero Conflicts Detected. Database integrity fully verified!")
-        if st.button("Simulate New Data Conflict"):
-            # Inject a mock conflict for demonstration purposes
+        st.success("No active data conflicts in database.")
+        if st.button("Simulate Test Conflict"):
             st.session_state.facts_db.loc[st.session_state.facts_db['Fact_ID'] == 'F-001', 'Status'] = 'Verified'
             st.session_state.facts_db.loc[st.session_state.facts_db['Fact_ID'] == 'F-005', 'Status'] = 'Conflict'
             st.rerun()
 
-# --- VIEW 6: DYNAMIC REPORTS ---
-elif view == "Dynamic Reports":
-    st.header("Dynamic Report Generation & Provenance Audit")
-    st.write("Generates automated summary documents where every figure links to verified database facts.")
+# --- AUTOMATED REPORTS ---
+elif view == "Automated Reports":
+    st.header("Report Output & Source Auditing")
+    st.write("Dynamic text output mapped directly to verified data records.")
     
     col_rep1, col_rep2 = st.columns([3, 1])
     with col_rep2:
-        st.button("Sync with Latest Facts", use_container_width=True)
-        st.button("Export Report (PDF)", use_container_width=True)
+        st.button("Refresh Content", use_container_width=True)
+        st.button("Export Summary (PDF)", use_container_width=True)
         
     with col_rep1:
-        # Fetch actual data values dynamically from session state
         bhp_23_fact = st.session_state.facts_db[st.session_state.facts_db['Fact_ID'] == 'F-001'].iloc[0]
         bhp_22_fact = st.session_state.facts_db[st.session_state.facts_db['Fact_ID'] == 'F-002'].iloc[0]
         rio_23_fact = st.session_state.facts_db[st.session_state.facts_db['Fact_ID'] == 'F-004'].iloc[0]
         rev_fact = st.session_state.facts_db[st.session_state.facts_db['Fact_ID'] == 'F-003'].iloc[0]
         
-        # Calculate dynamic variance
         calc_change = ((bhp_23_fact['Value'] - bhp_22_fact['Value']) / bhp_22_fact['Value']) * 100
         
         st.markdown("---")
         st.markdown(f"""
-        ### Executive Mining Review (FY 2023)
+        ### Operational Performance Summary (FY 2023)
         
-        **1. Operational Output Summary**
-        During FY 2023, **BHP** registered a verified Iron Ore Production total of 
-        <span class='badge-verified' title='Source: {bhp_23_fact["Document"]} | Pg {bhp_23_fact["Page"]}'>
+        **1. Production Volumes**
+        For the 2023 fiscal year, **BHP** reported an Iron Ore Production figure of 
+        <span class='badge-verified' title='Source: {bhp_23_fact["Document"]} | Page {bhp_23_fact["Page"]}'>
         {bhp_23_fact["Value"]} {bhp_23_fact["Unit"]}
-        </span>, reflecting a YoY output variance of 
-        <span class='badge-verified' title='Calculated deterministically from F-001 and F-002'>
+        </span>. This represents a YoY variance of 
+        <span class='badge-verified' title='Calculated from records F-001 and F-002'>
         +{calc_change:.2f}%
         </span> 
-        relative to FY 2022 output of 
-        <span class='badge-verified' title='Source: {bhp_22_fact["Document"]} | Pg {bhp_22_fact["Page"]}'>
+        compared to the FY 2022 total of 
+        <span class='badge-verified' title='Source: {bhp_22_fact["Document"]} | Page {bhp_22_fact["Page"]}'>
         {bhp_22_fact["Value"]} {bhp_22_fact["Unit"]}
         </span>.
         
-        Peer comparison shows **Rio Tinto** reaching an annual output volume of 
-        <span class='badge-verified' title='Source: {rio_23_fact["Document"]} | Pg {rio_23_fact["Page"]}'>
+        Over the same reporting timeframe, **Rio Tinto** registered production of 
+        <span class='badge-verified' title='Source: {rio_23_fact["Document"]} | Page {rio_23_fact["Page"]}'>
         {rio_23_fact["Value"]} {rio_23_fact["Unit"]}
-        </span> over the identical tracking window.
+        </span>.
         
-        **2. Financial Performance & Revenue Tracking**
-        * **Total Consolidated Revenue:** BHP generated 
-          <span class='badge-verified' title='Source: {rev_fact["Document"]} | Pg {rev_fact["Page"]}'>
+        **2. Financial Figures**
+        * **Consolidated Revenue:** BHP reported total revenue of 
+          <span class='badge-verified' title='Source: {rev_fact["Document"]} | Page {rev_fact["Page"]}'>
           {rev_fact["Value"]} {rev_fact["Unit"]}
           </span>.
-        * **Conflict Metrics:** Highlighting system data integrity checks, discrepancies between initial quarterly operational reports and final annual filings are highlighted above for review.
+        * **Audit Status:** All extracted values have passed validation rules. Discrepancies between interim quarterly operational reviews and full-year financial statements have been cataloged for operator review.
         
         ---
-        *Hover over highlighted metrics to inspect linked evidence source paths.*
+        *Hover over highlighted values to inspect primary document references.*
         """, unsafe_allow_html=True)
