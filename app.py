@@ -8,7 +8,6 @@ from datetime import datetime
 st.set_page_config(
     page_title="PRITHVI AI | Enterprise Doc AI", 
     layout="wide", 
-    page_icon=,
     initial_sidebar_state="expanded"
 )
 
