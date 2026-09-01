@@ -69,3 +69,11 @@ Flags overlapping facts with conflicting values (e.g., preliminary vs. audited v
 
 #### 6. Dynamic Reports
 Generates executive text summaries where every figure is enclosed in custom CSS badges. Hovering over a badge displays a native browser tooltip containing the original document filename and page number.
+
+<img width="956" height="431" alt="Screenshot 2026-09-01 234724" src="https://github.com/user-attachments/assets/2d3dd923-dd86-463d-ba3e-ddc0379a4b81" />
+<img width="938" height="392" alt="Screenshot 2026-09-01 234707" src="https://github.com/user-attachments/assets/740e29ad-d7fe-425a-bf8e-adada6510143" />
+<img width="957" height="442" alt="Screenshot 2026-09-01 234657" src="https://github.com/user-attachments/assets/be2bc73b-309a-4a1c-bc38-fa0011c449c4" />
+<img width="901" height="425" alt="Screenshot 2026-09-01 234645" src="https://github.com/user-attachments/assets/d181efbd-623a-46d5-8927-87148b7c8e94" />
+<img width="952" height="430" alt="Screenshot 2026-09-01 234745" src="https://github.com/user-attachments/assets/d49384fa-0b76-430c-bcc8-52ea0935176b" />
+<img width="932" height="426" alt="Screenshot 2026-09-01 234737" src="https://github.com/user-attachments/assets/7dda1c25-abb3-415e-9384-c00b44e84daf" />
+
